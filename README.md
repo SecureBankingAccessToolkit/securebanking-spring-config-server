@@ -1,2 +1,2 @@
-# securebanking-openbanking-config-rs
-The Spring configuration for the securebanking-openbanking projects
+# securebanking-spring-cloud-config-server
+A Dockerised Spring cloud config server for the securebanking projects
