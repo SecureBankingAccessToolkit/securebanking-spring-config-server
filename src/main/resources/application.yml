@@ -1,0 +1,15 @@
+spring:
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: ${CONFIG_SERVER_SEARCH_LOCATIONS}
+        git:
+          uri: ${CONFIG_SERVER_GIT_URI}
+          strictHostKeyChecking: false
+          ignoreLocalSshSettings: ${CONFIG_GIT_IGNORE_LOCAL_SSH:true}
+          privateKey: ${GIT_CONFIG_SSH_KEY}
+          searchPaths: '{profile}'
+          refreshRate: 600
+server:
+  port: 8888
