@@ -1,0 +1,13 @@
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${SPRING_CLOUD_CONFIG_SERVER_GIT_URI}
+          strictHostKeyChecking: false
+          ignoreLocalSshSettings: true
+          privateKey: ${SSH_KEY}
+          searchPaths: '{profile}'
+          refreshRate: 300
+server:
+  port: 8888
