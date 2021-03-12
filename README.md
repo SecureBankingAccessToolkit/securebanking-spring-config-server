@@ -12,14 +12,12 @@ and `[GIT_REPO_URL]` (e.g. with `git@github.com:SecureBankingAcceleratorToolkit/
 
 ```shell script
 java -jar target/securebanking-spring-config-server-[VERSION].jar \
-  --spring.cloud.config.server.git.ignoreLocalSshSettings=false \
   --spring.cloud.config.server.git.uri=[GIT_REPO_URL]
 ``` 
 
 For example:
 ```shell script
 java -jar target/securebanking-spring-config-server-1.0.0-SNAPSHOT.jar \
-  --spring.cloud.config.server.git.ignoreLocalSshSettings=false \
   --spring.cloud.config.server.git.uri=git@github.com:SecureBankingAcceleratorToolkit/securebanking-openbanking-spring-config.git
 ```
 
@@ -40,37 +38,5 @@ docker run -v ~/code/securebanking-configs:/home/dockeruser/config -d \
   eu.gcr.io/openbanking-214714/securebanking/securebanking-config-server:1.0.0-SNAPSHOT \
   --spring.cloud.config.server.native.searchLocations=file:./config/{profile} \
   --spring.profiles.active=native \
-  --spring.cloud.config.server.native.addLabelLocations=false \
-  --spring.cloud.config.server.git.ignoreLocalSshSettings=false
+  --spring.cloud.config.server.native.addLabelLocations=false
 ```
-
-These assume the host machine has the appropriate SSH configuration.
-
-## SSH Troubleshooting
-
-### Auth fail
-This can be caused by the private key not being found. It can be fixed by creating a file called `~/.ssh/config` with 
-the following contents (where `~/.ssh/id_rsa` is the path to your private key):
-```
-Host github.com
-  IdentityFile ~/.ssh/id_rsa
-``` 
-If you still get the same error, then you may need to prefix the repository URL with `ssh://` 
-(e.g. `ssh://git@github.com:SecureBankingAcceleratorToolkit/securebanking-openbanking-spring-config.git`).
-
-### Invalid privatekey
-One cause of this is that the private key is in the new OpenSSH format. If it is, the header will be:
-```
------BEGIN OPENSSH PRIVATE KEY-----
-```
-instead of
-```
------BEGIN RSA PRIVATE KEY-----
-```
-
-To create a private key in the old format, run the following:
-```shell script
-ssh-keygen -t rsa -m PEM
-```
-
-Don't forget to update the `~/.ssh/config` file if you have one, and have used a different key path.

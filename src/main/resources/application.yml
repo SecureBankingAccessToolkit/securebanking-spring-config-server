@@ -5,8 +5,7 @@ spring:
         git:
           uri: ${SPRING_CLOUD_CONFIG_SERVER_GIT_URI}
           strictHostKeyChecking: false
-          ignoreLocalSshSettings: true
-          privateKey: ${SSH_KEY}
+          ignoreLocalSshSettings: false
           searchPaths: '{profile}'
           refreshRate: 300
 server:
