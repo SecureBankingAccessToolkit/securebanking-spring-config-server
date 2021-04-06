@@ -34,7 +34,7 @@ jobs:
           echo "$PR"
           echo ::set-output name=pr_number::pr-"$PR"
       
-       - name: Build Docker Image
+      - name: Build Docker Image
         run: |
           make docker tag=${{ steps.tag.outputs.pr_number }}
 
