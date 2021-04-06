@@ -44,7 +44,6 @@ jobs:
           helm package $HELM_DIRECTORY/$SERVICE_NAME
       
       - name: Publish PR Chart
-        if: github.ref != 'refs/heads/main'
         run: |
           mv $SERVICE_NAME-${{ env.HELM_VERSION }}.tgz $SERVICE_NAME-latest.tgz
           gsutil cp $SERVICE_NAME-*.tgz gs://${{ secrets.HELM_DEV_BUCKET }}/$SERVICE_NAME/
