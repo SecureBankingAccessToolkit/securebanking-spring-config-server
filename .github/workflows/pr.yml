@@ -1,0 +1,44 @@
+name: pull-request
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Check PR integrity
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "14"
+          architecture: x64
+
+      - name: Cache Maven packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven2-${{ hashFiles('**/pom.xml') }}
+
+      - name: Check Copyright
+        run: mvn license:check
+
+      - name: Build
+        run: |
+          mvn -B clean package -DskipTests -DskipITs -DdockerCompose.skip -Ddockerfile.skip --file pom.xml
+      
+      - name: pr docker tag
+        id: tag
+        run: |
+          PR=$(echo "$GITHUB_REF" | awk -F / '{print $3}')
+          echo "$PR"
+          echo ::set-output name=pr_number::pr-"$PR"
+      
+       - name: Build Docker Image
+        run: |
+          docker build -t eu.gcr.io/${{ secrets.GCR_DEVELOPMENT_REPO }}/spring-config-server:${{ steps.tag.outputs.pr_number }} .
+          docker push eu.gcr.io/${{ secrets.GCR_DEVELOPMENT_REPO }}/spring-config-server:${{ steps.tag.outputs.pr_number }}
+
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_ACCESS_TOKEN }}
