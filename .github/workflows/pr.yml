@@ -36,8 +36,7 @@ jobs:
       
        - name: Build Docker Image
         run: |
-          docker build -t eu.gcr.io/${{ secrets.GCR_DEVELOPMENT_REPO }}/spring-config-server:${{ steps.tag.outputs.pr_number }} .
-          docker push eu.gcr.io/${{ secrets.GCR_DEVELOPMENT_REPO }}/spring-config-server:${{ steps.tag.outputs.pr_number }}
+          make docker tag=${{ steps.tag.outputs.pr_number }}
 
       - uses: codecov/codecov-action@v1
         with:
