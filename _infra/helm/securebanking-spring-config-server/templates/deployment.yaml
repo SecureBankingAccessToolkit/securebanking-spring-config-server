@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    app: {{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ .Values.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.rollingUpdate.maxUnavailable }}
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        appVersion: {{ .Chart.AppVersion }}
+        helmVersion: {{ .Chart.Version }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- if .Values.imageOverride.enabled }}
+          image: "{{ .Values.imageOverride.repo }}:{{ .Values.imageOverride.tag }}"
+          {{- else}}
+          image: "eu.gcr.io/sbat-gcr-release/securebanking/securebanking-spring-config-server:{{ .Chart.AppVersion }}"
+          {{- end}}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - name: http-server
+              containerPort: {{ .Values.server.port }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.server.port }}
+            periodSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.server.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
+            timeoutSeconds: 5
+          env:
+          - name: SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL
+            value: {{ .Values.git.branch }}
+          - name: SPRING_CLOUD_CONFIG_SERVER_GIT_URI
+            value: git@github.com:{{ .Values.git.org }}/{{ .Values.git.repo }}.git
+          - name: GIT_CONFIG_SSH_KEY
+            valueFrom:
+              secretKeyRef: 
+                name: git-ssh-key
+                key: id_rsa
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
