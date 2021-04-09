@@ -1,11 +1,13 @@
 FROM adoptopenjdk/openjdk14:jre-14.0.2_12
 
+ARG JAR_FILE
+
 RUN mkdir /app
-RUN groupadd -r spring-config && useradd -r -s /bin/false -g spring-config spring-config
+RUN groupadd -r rcs && useradd -r -s /bin/false -g rcs rcs
 
 WORKDIR /app
-COPY securebanking-spring-config-server.jar /app
-RUN chown -R spring-config:spring-config /app
-USER spring-config
+COPY $JAR_FILE /app/securebanking-spring-config-server.jar
+RUN chown -R rcs:rcs /app
+USER rcs
 
 CMD ["java", "-jar", "securebanking-spring-config-server.jar"]
