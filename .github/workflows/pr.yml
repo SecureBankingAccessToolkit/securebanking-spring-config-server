@@ -18,19 +18,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: binary version
+        id: binary
+        run: |
+          BINARY_VERSION=$(make version)
+          echo ::set-output name=version::"$BINARY_VERSION"
+
+          
       - name: Check for compatible release
         id: validator
         uses: SecureBankingAccessToolkit/securebanking-version-validator@master
         with:
           binaryVersion: ${{ steps.binary.outputs.version }}
           chartPath: "_infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml"
-      
-      - name: binary version
-        id: binary
-        run: |
-          BINARY_VERSION=$(make version)
-          echo ::set-output name=version::"$BINARY_VERSION"
-          
+
       - name: echo isRelease
         run: |
           echo ${{ steps.validator.outputs.isRelease }}
