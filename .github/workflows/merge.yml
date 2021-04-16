@@ -11,14 +11,16 @@ env:
   SERVICE_NAME: securebanking-spring-config-server
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     name: Check master integrity
+    outputs:
+      isUpdatedChart: ${{ steps.validator.outputs.isUpdatedChart }}
+      gcrRepo: ${{ steps.repository.outputs.gcrRepo }}
+      helmRepo: ${{ steps.repository.outputs.helmRepo }}
+      version: ${{ steps.binary.outputs.version }}
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GH_BOT_TOKEN }}
 
       - uses: actions/setup-java@v1
         with:
@@ -56,21 +58,46 @@ jobs:
           binaryVersion: ${{ steps.binary.outputs.version }}
           chartPath: "_infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml"
       
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_ACCESS_TOKEN }}
+
+      - name: set Repository variables
+        id: repository
+        run:
+          if [[ ${{ steps.validator.outputs.isRelease }} == 'true' ]]; then
+            echo "setting releases repositories"
+            echo ::set-output name=gcrRepo::"${{ secrets.RELEASE_REPO }}"
+            echo ::set-output name=helmRepo::"${{ secrets.HELM_RELEASE_BUCKET }}"
+          else
+            echo "setting develop repositories"
+            echo ::set-output name=gcrRepo::"sbat-gcr-develop"
+            echo ::set-output name=helmRepo::"${{ secrets.HELM_DEV_BUCKET }}"
+          fi
+  
+  update:
+    runs-on: ubuntu-latest
+    name: Update helm chart
+    needs: [test]
+    if: ${{ needs.test.outputs.isUpdatedChart == 'true' }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_BOT_TOKEN }}
+
       - name: Commit version update
-        if: ${{ steps.validator.outputs.isUpdatedChart == 'true' }}
         run: |
           git config --local user.email "fropenbanking@users.noreply.github.com"
           git config --local user.name "fropenbanking"
           git add _infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml
           git commit --allow-empty -m "Bumping Chart versions ${{ steps.binary.outputs.version }}"
       - name: Temporarily disable "include administrators" protection
-        if: ${{ steps.validator.outputs.isUpdatedChart == 'true' }}
         uses: benjefferies/branch-protection-bot@master
         with:
           access-token: ${{ secrets.GH_BOT_TOKEN }}
           enforce_admins: false
       - name: Push changes
-        if: ${{ steps.validator.outputs.isUpdatedChart == 'true' }}
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
@@ -81,25 +108,26 @@ jobs:
         with:
           access-token: ${{ secrets.GH_BOT_TOKEN }}
           enforce_admins: true
-      
+  
+  package:
+    runs-on: ubuntu-latest
+    name: package artifacts
+    needs: [test]
+    if: ${{ needs.test.outputs.isUpdatedChart == 'false' }}
+    steps:
+      - uses: actions/checkout@v2
+
       - name: Build Docker Image
-        if: ${{ steps.validator.outputs.isRelease == 'true' }}
         run: |
-          make docker repo=${{ secrets.RELEASE_REPO }}
+          make docker repo=${{ needs.test.outputs.gcrRepo }}
 
       - name: package helm
-        if: ${{ steps.validator.outputs.isRelease == 'true' }}
         run: |
-          make helm version=${{ steps.binary.outputs.version }}
+          make helm version=${{ needs.test.outputs.version }}
 
       - name: Publish Release Chart 
-        if: ${{ steps.validator.outputs.isRelease == 'true' }}
         id: upload
         uses: google-github-actions/upload-cloud-storage@main
         with:
-          path: ${{ env.SERVICE_NAME }}-${{ steps.binary.outputs.version }}.tgz
-          destination: ${{ secrets.HELM_RELEASE_BUCKET }}/${{ env.SERVICE_NAME }}
-
-      - uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_ACCESS_TOKEN }}
+          path: ${{ env.SERVICE_NAME }}-${{ needs.test.outputs.version }}.tgz
+          destination: ${{ needs.test.outputs.helmRepo }}/${{ env.SERVICE_NAME }}
