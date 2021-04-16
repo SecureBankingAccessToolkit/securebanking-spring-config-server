@@ -65,7 +65,7 @@ jobs:
       - name: set Repository variables
         id: repository
         run:
-          if [[ ${{ steps.validator.outputs.isRelease }} == 'true' ]]; then
+          if [[ "${{ steps.validator.outputs.isRelease }}" == "true" ]] then
             echo "setting releases repositories"
             echo ::set-output name=gcrRepo::"${{ secrets.RELEASE_REPO }}"
             echo ::set-output name=helmRepo::"${{ secrets.HELM_RELEASE_BUCKET }}"
