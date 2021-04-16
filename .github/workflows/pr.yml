@@ -44,7 +44,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
-          branch: ${{ github.ref }}
+          branch: actions-debug
 
       - name: Temporarily disable "include administrators" protection
         if: ${{ steps.validator.outputs.isUpdatedChart == 'true' }}
