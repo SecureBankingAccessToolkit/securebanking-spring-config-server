@@ -104,7 +104,7 @@ jobs:
       - name: set Repository variables
         id: repository
         run: |
-          if [[ "${{ need.versioning.outputs.isRelease }}" == "true" ]]; then
+          if [[ "${{ needs.versioning.outputs.isRelease }}" == "true" ]]; then
             echo "setting releases repository map keys"
             echo ::set-output name=gcrRepo::"RELEASE_REPO"
             echo ::set-output name=helmRepo::"HELM_RELEASE_BUCKET"
