@@ -59,12 +59,12 @@ jobs:
         run: |
           if [[ "${{ steps.validator.outputs.isRelease }}" == "true" ]]; then
             echo "setting releases repositories"
-            echo ::set-output name=gcrRepo::"${{ secrets.RELEASE_REPO }}"
-            echo ::set-output name=helmRepo::"${{ secrets.HELM_RELEASE_BUCKET }}"
+            echo ::set-output name=gcrRepo::"RELEASE_REPO"
+            echo ::set-output name=helmRepo::"HELM_RELEASE_BUCKET"
           else
             echo "setting develop repositories"
-            echo ::set-output name=gcrRepo::"sbat-gcr-develop"
-            echo ::set-output name=helmRepo::"${{ secrets.HELM_DEV_BUCKET }}"
+            echo ::set-output name=gcrRepo::"DEV_REPO"
+            echo ::set-output name=helmRepo::"HELM_DEV_BUCKET"
           fi
   
   update:
@@ -121,10 +121,10 @@ jobs:
 
       - run: |
           gcloud auth configure-docker
-          
+
       - name: Build Docker Image
         run: |
-          make docker repo=${{ needs.test.outputs.gcrRepo }}
+          make docker repo=${{ secrets[needs.test.outputs.gcrRepo] }}
 
       - name: package helm
         run: |
@@ -135,4 +135,4 @@ jobs:
         uses: google-github-actions/upload-cloud-storage@main
         with:
           path: ${{ env.SERVICE_NAME }}-${{ needs.test.outputs.version }}.tgz
-          destination: ${{ needs.test.outputs.helmRepo }}/${{ env.SERVICE_NAME }}
+          destination: ${{ secrets[needs.test.outputs.helmRepo] }}/${{ env.SERVICE_NAME }}
