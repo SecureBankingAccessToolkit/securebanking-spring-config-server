@@ -1,0 +1,109 @@
+name: merge-master
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - README.md
+
+env:
+  SERVICE_NAME: securebanking-spring-config-server
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Check master integrity
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "14"
+          architecture: x64
+
+      - name: Cache Maven packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven2-${{ hashFiles('**/pom.xml') }}
+
+      - name: test
+        run: |
+          make verify
+
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GCR_KEY }}
+          export_default_credentials: true
+
+      - name: binary version
+        id: binary
+        run: |
+          BINARY_VERSION=$(make version)
+          echo ::set-output name=version::"$BINARY_VERSION"
+
+      - name: Check for compatible release
+        id: validator
+        uses: secureBankingAcceleratorToolkit/securebanking-version-validator@master
+        with:
+          binaryVersion: ${{ steps.binary.outputs.version }}
+          chartPath: "_infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml"
+
+      - run: |
+          gcloud auth configure-docker
+
+      - name: Build Docker Image
+        if: ${{ steps.validator.outputs.isRelease }}
+        run: |
+          make docker repo=${{ secrets.RELEASE_REPO }}
+
+      - name: package helm
+        if: ${{ steps.validator.outputs.isRelease }}
+        run: |
+          make helm version=${{ steps.binary.outputs.version }}
+
+      - name: Publish Release Chart 
+        if: ${{ steps.validator.outputs.isRelease }}
+        id: upload
+        uses: google-github-actions/upload-cloud-storage@main
+        with:
+          path: ${{ env.SERVICE_NAME }}-${{ steps.binary.outputs.version }}.tgz
+          destination: ${{ secrets.HELM_RELEASE_BUCKET }}/${{ env.SERVICE_NAME }}
+      
+      - name: Commit version update
+        if: ${{ steps.validator.outputs.updatedChart }}
+        working-directory: ./${{ env.SERVICE_NAME}}
+        run: |
+          git config --global user.email "codefresh@codefresh.io"
+          git config --global user.name "Codefresh"
+          git add _infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml
+          git commit --allow-empty -m "Bumping Chart version ${{ steps.binary.outputs.version }}"
+      - name: Temporarily disable "include administrators" protection
+        if: ${{ steps.validator.outputs.updatedChart }}
+        uses: benjefferies/branch-protection-bot@master
+        with:
+          access-token: ${{ secrets.GH_BOT_TOKEN }}
+          enforce_admins: false
+          owner: secureBankingAccessToolkit
+          repo: ${{ env.SERVICE_NAME}}
+      - name: Push changes
+        if: ${{ steps.validator.outputs.updatedChart }}
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          directory: ./${{ env.SERVICE_NAME}}
+          repository: "secureBankingAcceleratorToolkit/${{ env.SERVICE_NAME}}"
+          branch: master
+      - name: Enable "include administrators" branch protection
+        uses: benjefferies/branch-protection-bot@master
+        if: always()
+        with:
+          access-token: ${{ secrets.GH_BOT_TOKEN }}
+          enforce_admins: true
+          owner: secureBankingAccessToolkit
+          repo: ${{ env.SERVICE_NAME}}
+
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_ACCESS_TOKEN }}

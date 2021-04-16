@@ -1,23 +1,32 @@
 name := securebanking-spring-config-server
 repo := sbat-gcr-develop
+tag  := $(shell mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
 
 .PHONY: all
-all: clean test package
+all: clean verify dev
 
 clean:
-	rm -f ${name}.jar
 	mvn clean
 
-test:
-	mvn verify
+verify: clean
+	mvn verify -Ddockerfile.skip
 
-package:
-	mvn package -DskipTests=true
+docker: clean
+	mvn package dockerfile:push -DskipTests=true -Dtag=${tag} \
+	  -DgcrRepo=${repo} --file pom.xml
 
-docker: clean package
-ifndef tag
-	$(error "You must supply a docker tag")
+helm: clean
+ifndef version
+	$(error A version must be supplied, Eg. make helm version=1.0.0)
 endif
-	cp target/${name}-*.jar ./${name}.jar
-	docker build -t eu.gcr.io/${repo}/securebanking/spring-config-server:${tag} .
-	docker push eu.gcr.io/${repo}/securebanking/spring-config-server:${tag}
+	helm dep up _infra/helm/${name}
+	helm template _infra/helm/${name}
+	helm package _infra/helm/${name}
+	mv ./${name}-*.tgz ./${name}-${version}.tgz
+
+dev: clean
+	mvn package -DskipTests=true -Dtag=latest -DgcrRepo=${repo} \
+	  --file pom.xml
+
+version:
+	@echo $(tag)

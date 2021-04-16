@@ -27,6 +27,11 @@
     <name>securebanking-spring-config-server</name>
     <description>A Spring Cloud Config Server for the Secure Banking Accelerator Toolkit</description>
 
+    <properties>
+        <tag>${project.version}</tag>
+        <gcrRepo>sbat-gcr-develop</gcrRepo>
+    </properties>
+
     <parent>
         <groupId>com.forgerock.securebanking</groupId>
         <artifactId>securebanking-parent</artifactId>
@@ -96,10 +101,11 @@
                 <artifactId>dockerfile-maven-plugin</artifactId>
                 <configuration>
                     <skipPush>false</skipPush>
-                    <repository>eu.gcr.io/sbat-gcr-develop/securebanking/spring-config-server</repository>
+                    <repository>eu.gcr.io/${gcrRepo}/securebanking/${project.artifactId}</repository>
                     <buildArgs>
                         <JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
                     </buildArgs>
+                    <tag>${tag}</tag>
                 </configuration>
                 <executions>
                     <execution>
