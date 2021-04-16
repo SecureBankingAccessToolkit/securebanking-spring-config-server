@@ -54,17 +54,17 @@ jobs:
           gcloud auth configure-docker
 
       - name: Build Docker Image
-        if: ${{ steps.validator.outputs.isRelease }}
+        if: ${{ steps.validator.outputs.isRelease }} == 'true'
         run: |
           make docker repo=${{ secrets.RELEASE_REPO }}
 
       - name: package helm
-        if: ${{ steps.validator.outputs.isRelease }}
+        if: ${{ steps.validator.outputs.isRelease }} == 'true'
         run: |
           make helm version=${{ steps.binary.outputs.version }}
 
       - name: Publish Release Chart 
-        if: ${{ steps.validator.outputs.isRelease }}
+        if: ${{ steps.validator.outputs.isRelease }} == 'true'
         id: upload
         uses: google-github-actions/upload-cloud-storage@main
         with:
@@ -72,7 +72,7 @@ jobs:
           destination: ${{ secrets.HELM_RELEASE_BUCKET }}/${{ env.SERVICE_NAME }}
       
       - name: Commit version update
-        if: ${{ steps.validator.outputs.updatedChart }}
+        if: ${{ steps.validator.outputs.updatedChart }} == 'true'
         working-directory: ./${{ env.SERVICE_NAME}}
         run: |
           git config --global user.email "codefresh@codefresh.io"
@@ -80,7 +80,7 @@ jobs:
           git add _infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml
           git commit --allow-empty -m "Bumping Chart version ${{ steps.binary.outputs.version }}"
       - name: Temporarily disable "include administrators" protection
-        if: ${{ steps.validator.outputs.updatedChart }}
+        if: ${{ steps.validator.outputs.updatedChart }} == 'true'
         uses: benjefferies/branch-protection-bot@master
         with:
           access-token: ${{ secrets.GH_BOT_TOKEN }}
@@ -88,7 +88,7 @@ jobs:
           owner: SecureBankingAccessToolkit
           repo: ${{ env.SERVICE_NAME}}
       - name: Push changes
-        if: ${{ steps.validator.outputs.updatedChart }}
+        if: ${{ steps.validator.outputs.updatedChart }} == 'true'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
