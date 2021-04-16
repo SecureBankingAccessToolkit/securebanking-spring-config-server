@@ -45,7 +45,7 @@ jobs:
 
       - name: Check for compatible release
         id: validator
-        uses: secureBankingAcceleratorToolkit/securebanking-version-validator@master
+        uses: secureBankingAccessToolkit/securebanking-version-validator@master
         with:
           binaryVersion: ${{ steps.binary.outputs.version }}
           chartPath: "_infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml"
