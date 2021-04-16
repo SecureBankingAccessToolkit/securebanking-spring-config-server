@@ -42,6 +42,7 @@ jobs:
     needs: [test]
     outputs:
       isUpdatedChart: ${{ steps.validator.outputs.isUpdatedChart }}
+      isRelease: ${{ steps.validator.outputs.isRelease }}
       version: ${{ steps.binary.outputs.version }}
     steps:
       - uses: actions/checkout@v2
