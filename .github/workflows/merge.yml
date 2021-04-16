@@ -91,7 +91,7 @@ jobs:
   package:
     runs-on: ubuntu-latest
     name: package artifacts
-    needs: [test]
+    needs: [test, versioning]
     if: ${{ needs.versioning.outputs.isUpdatedChart == 'false' }}
     steps:
       - uses: actions/checkout@v2
