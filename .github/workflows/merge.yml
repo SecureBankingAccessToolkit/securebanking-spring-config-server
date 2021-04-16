@@ -85,7 +85,7 @@ jobs:
         with:
           access-token: ${{ secrets.GH_BOT_TOKEN }}
           enforce_admins: false
-          owner: secureBankingAccessToolkit
+          owner: SecureBankingAccessToolkit
           repo: ${{ env.SERVICE_NAME}}
       - name: Push changes
         if: ${{ steps.validator.outputs.updatedChart }}
@@ -93,7 +93,7 @@ jobs:
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           directory: ./${{ env.SERVICE_NAME}}
-          repository: "secureBankingAcceleratorToolkit/${{ env.SERVICE_NAME}}"
+          repository: "SecureBankingAccessToolkit/${{ env.SERVICE_NAME}}"
           branch: master
       - name: Enable "include administrators" branch protection
         uses: benjefferies/branch-protection-bot@master
@@ -101,7 +101,7 @@ jobs:
         with:
           access-token: ${{ secrets.GH_BOT_TOKEN }}
           enforce_admins: true
-          owner: secureBankingAccessToolkit
+          owner: SecureBankingAccessToolkit
           repo: ${{ env.SERVICE_NAME}}
 
       - uses: codecov/codecov-action@v1
