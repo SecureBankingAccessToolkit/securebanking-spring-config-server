@@ -32,7 +32,6 @@ jobs:
           chartPath: "_infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml"
       
       - name: Commit ob-deploy version update
-        working-directory: ./${{ env.SERVICE_NAME }}
         run: |
           ls -la
           git config --global user.email "fropenbanking@users.noreply.github.com"
