@@ -26,7 +26,7 @@ spec:
           {{- if .Values.imageOverride.enabled }}
           image: "{{ .Values.imageOverride.repo }}:{{ .Values.imageOverride.tag }}"
           {{- else}}
-          image: "eu.gcr.io/sbat-gcr-release/securebanking/securebanking-spring-config-server:{{ .Chart.AppVersion }}"
+          image: "eu.gcr.io/sbat-gcr-release/securebanking/{{ .Chart.Name }}:{{ .Chart.AppVersion }}"
           {{- end}}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
