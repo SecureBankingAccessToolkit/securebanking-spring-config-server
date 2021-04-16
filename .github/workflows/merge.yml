@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_BOT_TOKEN }}
 
       - uses: actions/setup-java@v1
         with:
@@ -45,33 +46,15 @@ jobs:
           BINARY_VERSION=$(make version)
           echo ::set-output name=version::"$BINARY_VERSION"
 
+      - run: |
+          gcloud auth configure-docker
+
       - name: Check for compatible release
         id: validator
         uses: SecureBankingAccessToolkit/securebanking-version-validator@master
         with:
           binaryVersion: ${{ steps.binary.outputs.version }}
           chartPath: "_infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml"
-
-      - run: |
-          gcloud auth configure-docker
-
-      - name: Build Docker Image
-        if: ${{ steps.validator.outputs.isRelease == 'true' }}
-        run: |
-          make docker repo=${{ secrets.RELEASE_REPO }}
-
-      - name: package helm
-        if: ${{ steps.validator.outputs.isRelease == 'true' }}
-        run: |
-          make helm version=${{ steps.binary.outputs.version }}
-
-      - name: Publish Release Chart 
-        if: ${{ steps.validator.outputs.isRelease == 'true' }}
-        id: upload
-        uses: google-github-actions/upload-cloud-storage@main
-        with:
-          path: ${{ env.SERVICE_NAME }}-${{ steps.binary.outputs.version }}.tgz
-          destination: ${{ secrets.HELM_RELEASE_BUCKET }}/${{ env.SERVICE_NAME }}
       
       - name: Commit version update
         if: ${{ steps.validator.outputs.isUpdatedChart == 'true' }}
@@ -106,6 +89,24 @@ jobs:
         with:
           access-token: ${{ secrets.GH_BOT_TOKEN }}
           enforce_admins: true
+      
+      - name: Build Docker Image
+        if: ${{ steps.validator.outputs.isRelease == 'true' }}
+        run: |
+          make docker repo=${{ secrets.RELEASE_REPO }}
+
+      - name: package helm
+        if: ${{ steps.validator.outputs.isRelease == 'true' }}
+        run: |
+          make helm version=${{ steps.binary.outputs.version }}
+
+      - name: Publish Release Chart 
+        if: ${{ steps.validator.outputs.isRelease == 'true' }}
+        id: upload
+        uses: google-github-actions/upload-cloud-storage@main
+        with:
+          path: ${{ env.SERVICE_NAME }}-${{ steps.binary.outputs.version }}.tgz
+          destination: ${{ secrets.HELM_RELEASE_BUCKET }}/${{ env.SERVICE_NAME }}
 
       - uses: codecov/codecov-action@v1
         with:
