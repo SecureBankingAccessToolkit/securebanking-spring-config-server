@@ -24,19 +24,21 @@ jobs:
           BINARY_VERSION=$(make version)
           echo ::set-output name=version::"$BINARY_VERSION"
 
-          
       - name: Check for compatible release
         id: validator
         uses: SecureBankingAccessToolkit/securebanking-version-validator@master
         with:
           binaryVersion: ${{ steps.binary.outputs.version }}
           chartPath: "_infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml"
-
-      - name: echo isRelease
-        run: |
-          echo ${{ steps.validator.outputs.isRelease }}
-          echo ${{ steps.validator.outputs.isUpdatedChart }}
       
+      - name: Commit ob-deploy version update
+        working-directory: ./${{ env.SERVICE_NAME }}
+        run: |
+          git config --global user.email "fropenbanking@users.noreply.github.com"
+          git config --global user.name "fropenbanking"
+          git add _infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml
+          git commit --allow-empty -m "Bumping version ${{ steps.binary.outputs.version }}"
+
       - name: Temporarily disable "include administrators" protection
         if: ${{ steps.validator.outputs.isUpdatedChart == 'true' }}
         uses: benjefferies/branch-protection-bot@master
