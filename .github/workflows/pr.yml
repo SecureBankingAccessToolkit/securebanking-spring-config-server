@@ -17,6 +17,8 @@ jobs:
     name: Check PR integrity
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: binary version
         id: binary
@@ -34,8 +36,8 @@ jobs:
       - name: Commit ob-deploy version update
         run: |
           ls -la
-          git config --global user.email "fropenbanking@users.noreply.github.com"
-          git config --global user.name "fropenbanking"
+          git config --local user.email "fropenbanking@users.noreply.github.com"
+          git config --local user.name "fropenbanking"
           git add _infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml
           git commit --allow-empty -m "Bumping version ${{ steps.binary.outputs.version }}"
 
