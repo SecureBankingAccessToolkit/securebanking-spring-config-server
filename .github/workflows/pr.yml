@@ -64,7 +64,7 @@ jobs:
       
       - name: Build Docker Image
         run: |
-          make docker
+          make docker tag=latest
           ## push pr tag
           docker tag eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/{{ env.SERVICE_NAME }}:latest eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/{{ env.SERVICE_NAME }}:${{ steps.tag.outputs.pr_number }}
           docker push !$
