@@ -1,4 +1,4 @@
-name := securebanking-spring-config-server
+name := $(shell mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
 repo := sbat-gcr-develop
 tag  := $(shell mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
 

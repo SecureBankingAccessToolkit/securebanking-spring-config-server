@@ -28,7 +28,7 @@
     <description>A Spring Cloud Config Server for the Secure Banking Accelerator Toolkit</description>
 
     <properties>
-        <tag>${project.version}</tag>
+        <tag>latest</tag>
         <gcrRepo>sbat-gcr-develop</gcrRepo>
     </properties>
 
