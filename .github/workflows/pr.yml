@@ -39,7 +39,7 @@ jobs:
     
       - name: package helm
         run: |
-          make helm
+          make helm version=latest
       
       - name: Publish PR Chart
         run: |
