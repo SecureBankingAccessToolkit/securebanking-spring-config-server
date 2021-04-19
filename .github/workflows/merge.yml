@@ -137,3 +137,23 @@ jobs:
         with:
           path: ${{ env.SERVICE_NAME }}-${{ needs.versioning.outputs.version }}.tgz
           destination: ${{ secrets[steps.repository.outputs.helmRepo] }}/${{ env.SERVICE_NAME }}
+  
+  release:
+    runs-on: ubuntu-latest
+    name: package artifacts
+    needs: [versioning, package]
+    if: ${{ needs.versioning.outputs.isRelease == 'true' }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: push tag
+        uses: mathieudutour/github-tag-action@v5.4
+        with:
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
+          custom_tag: ${{ needs.versioning.outputs.version }}
+          create_annotated_tag: true
+      
+      - name: Release
+        uses: softprops/action-gh-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
