@@ -64,7 +64,7 @@ jobs:
           chartPath: "_infra/helm/${{ env.SERVICE_NAME }}/Chart.yaml"
 
       - name: Commit version update
-        if: ${{ needs.versioning.outputs.isUpdatedChart == 'true' }}
+        if: ${{ steps.validator.outputs.isUpdatedChart == 'true' }}
         run: |
           git config --local user.email "fropenbanking@users.noreply.github.com"
           git config --local user.name "fropenbanking"
@@ -72,13 +72,13 @@ jobs:
           git commit --allow-empty -m "Bumping Chart versions ${{ steps.binary.outputs.version }}"
       - name: Temporarily disable "include administrators" protection
         uses: benjefferies/branch-protection-bot@master
-        if: ${{ needs.versioning.outputs.isUpdatedChart == 'true' }}
+        if: ${{ steps.validator.outputs.isUpdatedChart == 'true' }}
         with:
           access-token: ${{ secrets.GH_BOT_TOKEN }}
           enforce_admins: false
       - name: Push changes
         uses: ad-m/github-push-action@master
-        if: ${{ needs.versioning.outputs.isUpdatedChart == 'true' }}
+        if: ${{ steps.validator.outputs.isUpdatedChart == 'true' }}
         with:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           branch: master
@@ -138,9 +138,9 @@ jobs:
           path: ${{ env.SERVICE_NAME }}-${{ needs.versioning.outputs.version }}.tgz
           destination: ${{ secrets[steps.repository.outputs.helmRepo] }}/${{ env.SERVICE_NAME }}
   
-  release:
+  tag:
     runs-on: ubuntu-latest
-    name: package artifacts
+    name: Create tag
     needs: [versioning, package]
     if: ${{ needs.versioning.outputs.isRelease == 'true' }}
     steps:
@@ -152,8 +152,4 @@ jobs:
           github_token: ${{ secrets.GH_BOT_TOKEN }}
           custom_tag: ${{ needs.versioning.outputs.version }}
           create_annotated_tag: true
-      
-      - name: Release
-        uses: softprops/action-gh-release@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          tag_prefix: ""
