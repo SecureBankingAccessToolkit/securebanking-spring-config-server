@@ -53,11 +53,17 @@ spec:
           - name: SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL
             value: {{ .Values.git.branch }}
           - name: SPRING_CLOUD_CONFIG_SERVER_GIT_URI
+            {{- if .Values.git.ssh.enabled }}
             value: git@github.com:{{ .Values.git.org }}/{{ .Values.git.repo }}.git
+            {{- else }}
+            value: https://github.com/{{ .Values.git.org }}/{{ .Values.git.repo }}.git
+            {{- end }}
+          {{ if .Values.git.ssh.enabled }}
           - name: GIT_CONFIG_SSH_KEY
             valueFrom:
               secretKeyRef: 
                 name: git-ssh-key
                 key: id_rsa
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

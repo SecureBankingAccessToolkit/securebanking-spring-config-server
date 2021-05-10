@@ -9,15 +9,17 @@ imagePullPolicy: Always
 # Deploy a different image to the intended release (useful for test and development)
 imageOverride:
   enabled: true
-  repo: eu.gcr.io/sbat-gcr-release/securebanking/spring-config-server
+  repo: eu.gcr.io/sbat-gcr-develop/securebanking/securebanking-spring-config-server
   tag: latest
 
 server:
   port: 8888
 
 git:
-  storedSecretProject: example-project
-  org: SecureBankingAcceleratorToolkit
+  ssh: 
+    enabled: false
+    storedSecretProject: example-project
+  org: SecureBankingAccessToolkit
   repo: securebanking-openbanking-spring-config
   branch: master
 
