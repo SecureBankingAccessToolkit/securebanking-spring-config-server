@@ -74,7 +74,7 @@ jobs:
         uses: benjefferies/branch-protection-bot@master
         if: ${{ steps.validator.outputs.isUpdatedChart == 'true' }}
         with:
-          access-token: ${{ secrets.GH_BOT_TOKEN }}
+          access_token: ${{ secrets.GH_BOT_TOKEN }}
           enforce_admins: false
       - name: Push changes
         uses: ad-m/github-push-action@master
@@ -86,7 +86,7 @@ jobs:
         uses: benjefferies/branch-protection-bot@master
         if: always()
         with:
-          access-token: ${{ secrets.GH_BOT_TOKEN }}
+          access_token: ${{ secrets.GH_BOT_TOKEN }}
           enforce_admins: true
   
   package:
@@ -112,7 +112,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          make docker repo=$(echo ${{ github.sha }} | cut -c1-8)
+          make docker repo=$(echo ${{ github.sha }} | cut -c1-7)
           docker tag eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/${{ env.SERVICE_NAME }}:${{ github.sha }} eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/${{ env.SERVICE_NAME }}:latest
           docker push eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/${{ env.SERVICE_NAME }}:latest
       

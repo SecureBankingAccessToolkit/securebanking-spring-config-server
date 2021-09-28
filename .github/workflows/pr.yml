@@ -29,10 +29,6 @@ jobs:
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven2-${{ hashFiles('**/pom.xml') }}
-      
-      - name: Build Docker Image
-        run: |
-          echo ${{ github.sha }} | cut -c1-8
 
       - uses: google-github-actions/setup-gcloud@master
         with:
