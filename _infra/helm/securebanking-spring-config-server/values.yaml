@@ -7,10 +7,11 @@ rollingUpdate:
 imagePullPolicy: Always
 
 # Deploy a different image to the intended release (useful for test and development)
-imageOverride:
-  enabled: true
-  repo: eu.gcr.io/sbat-gcr-develop/securebanking/securebanking-spring-config-server
-  tag: latest
+deployment:
+  imageOverride:
+    enabled: true
+    repo: eu.gcr.io/sbat-gcr-develop/securebanking/securebanking-spring-config-server
+    tag: latest
 
 server:
   port: 8888

@@ -23,9 +23,9 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          {{- if .Values.imageOverride.enabled }}
-          image: "{{ .Values.imageOverride.repo }}:{{ .Values.imageOverride.tag }}"
-          {{- else}}
+          {{- if .Values.deployment.imageOverride.enabled }}
+          image: "{{ .Values.deployment.imageOverride.repo }}:{{ .Values.deployment.imageOverride.tag }}"
+          {{- else }}
           image: "eu.gcr.io/sbat-gcr-release/securebanking/{{ .Chart.Name }}:{{ .Chart.AppVersion }}"
           {{- end}}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
