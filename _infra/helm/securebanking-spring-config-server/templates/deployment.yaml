@@ -5,11 +5,11 @@ metadata:
   labels:
     app: {{ .Chart.Name }}
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ .Values.deployment.replicas }}
   strategy:
     rollingUpdate:
-      maxSurge: {{ .Values.rollingUpdate.maxSurge }}
-      maxUnavailable: {{ .Values.rollingUpdate.maxUnavailable }}
+      maxSurge: {{ .Values.deployment.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.deployment.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   selector:
     matchLabels:
@@ -23,12 +23,12 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          {{- if .Values.imageOverride.enabled }}
-          image: "{{ .Values.imageOverride.repo }}:{{ .Values.imageOverride.tag }}"
-          {{- else}}
+          {{- if .Values.deployment.imageOverride.enabled }}
+          image: "{{ .Values.deployment.imageOverride.repo }}:{{ .Values.deployment.imageOverride.tag }}"
+          {{- else }}
           image: "eu.gcr.io/sbat-gcr-release/securebanking/{{ .Chart.Name }}:{{ .Chart.AppVersion }}"
           {{- end}}
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
           ports:
             - name: http-server
               containerPort: {{ .Values.server.port }}
@@ -66,4 +66,4 @@ spec:
                 key: id_rsa
           {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.deployment.resources | nindent 12 }}

@@ -102,19 +102,6 @@ jobs:
           java-version: "14"
           architecture: x64
 
-      - name: set Repository variables
-        id: repository
-        run: |
-          if [[ "${{ needs.versioning.outputs.isRelease }}" == "true" ]]; then
-            echo "setting releases repository map keys"
-            echo ::set-output name=gcrRepo::"RELEASE_REPO"
-            echo ::set-output name=helmRepo::"HELM_RELEASE_BUCKET"
-          else
-            echo "setting develop repository map keys"
-            echo ::set-output name=gcrRepo::"DEV_REPO"
-            echo ::set-output name=helmRepo::"HELM_DEV_BUCKET"
-          fi
-
       - uses: google-github-actions/setup-gcloud@master
         with:
           service_account_key: ${{ secrets.GCR_KEY }}
@@ -125,19 +112,18 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          make docker repo=${{ secrets[steps.repository.outputs.gcrRepo] }}
-          make docker tag=latest
-
-      - name: package helm
-        run: |
-          make helm version=${{ needs.versioning.outputs.version }}
-
-      - name: Publish Release Chart 
-        id: upload
-        uses: google-github-actions/upload-cloud-storage@main
+          make docker repo=${{ github.sha }}
+          docker tag eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/${{ env.SERVICE_NAME }}:${{ github.sha }} eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/${{ env.SERVICE_NAME }}:latest
+          docker push eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/${{ env.SERVICE_NAME }}:latest
+      
+      - name: 'run functional tests'
+        uses: codefresh-io/codefresh-pipeline-runner@master
         with:
-          path: ${{ env.SERVICE_NAME }}-${{ needs.versioning.outputs.version }}.tgz
-          destination: ${{ secrets[steps.repository.outputs.helmRepo] }}/${{ env.SERVICE_NAME }}
+          args: '-v SERVICE_NAME=config'
+        env:
+          PIPELINE_NAME: 'ForgeCloud/sbat-infra/service-build'
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+        id: run-pipeline
   
   tag:
     runs-on: ubuntu-latest
