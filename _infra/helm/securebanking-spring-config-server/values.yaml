@@ -1,18 +1,21 @@
-replicas: 1
+deployment: 
+  replicas: 1
 
-rollingUpdate:
-  maxSurge: 50%
-  maxUnavailable: 25%
+  rollingUpdate:
+    maxSurge: 50%
+    maxUnavailable: 25%
 
-imagePullPolicy: Always
+  imagePullPolicy: Always
 
 # Deploy a different image to the intended release (useful for test and development)
-deployment:
+
   imageOverride:
     enabled: true
     repo: eu.gcr.io/sbat-gcr-develop/securebanking/securebanking-spring-config-server
     tag: latest
 
+  resources: {}
+  
 server:
   port: 8888
 
@@ -23,5 +26,3 @@ git:
   org: SecureBankingAccessToolkit
   repo: securebanking-openbanking-spring-config
   branch: master
-
-resources: {}
