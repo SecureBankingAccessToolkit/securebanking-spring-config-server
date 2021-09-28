@@ -10,7 +10,7 @@ on:
 env:
   HELM_DIRECTORY: _infra/helm/
   SERVICE_NAME: securebanking-spring-config-server
-  PR_NUMBER: pr-${{ github.event.number }}
+  PR_NUMBER: pr-${{ github.event.number::8 }}
 
 jobs:
   build:
