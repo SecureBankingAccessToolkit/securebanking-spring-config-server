@@ -11,6 +11,7 @@ env:
   HELM_DIRECTORY: _infra/helm/
   SERVICE_NAME: securebanking-spring-config-server
   PR_NUMBER: pr-${{ github.event.number }}
+  GIT_SHA_SHORT: $(echo ${{ github.sha }} | cut -c1-7)
 
 jobs:
   build:
@@ -36,6 +37,7 @@ jobs:
       
       - name: template helm
         run: |
+          echo ${{ env.GIT_SHA_SHORT }}
           helm template $HELM_DIRECTORY/$SERVICE_NAME
 
       - name: Check Copyright
