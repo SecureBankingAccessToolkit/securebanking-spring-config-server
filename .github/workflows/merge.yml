@@ -112,7 +112,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          make docker repo=$(echo ${{ github.sha }} | cut -c1-7)
+          make docker tag=$(echo ${{ github.sha }} | cut -c1-7)
           docker tag eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/${{ env.SERVICE_NAME }}:${{ github.sha }} eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/${{ env.SERVICE_NAME }}:latest
           docker push eu.gcr.io/${{ secrets.DEV_REPO }}/securebanking/${{ env.SERVICE_NAME }}:latest
       
