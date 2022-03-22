@@ -4,6 +4,7 @@ A configuration server app using Spring Cloud Config Server. By default, it runs
 
 ```
 http://localhost:8888/securebanking-openbanking-uk-rcs/docker
+
 ```
 
 ## Running from the command line
