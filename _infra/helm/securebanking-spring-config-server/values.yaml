@@ -1,4 +1,5 @@
-deployment: 
+deployment:
+  apiVersion: apps/v1
   replicas: 1
 
   rollingUpdate:
@@ -7,17 +8,26 @@ deployment:
 
   imagePullPolicy: Always
 
-# Deploy a different image to the intended release (useful for test and development)
 
+  # Deploy a different image to the intended release (useful for test and development)
   imageOverride:
     enabled: true
     repo: eu.gcr.io/sbat-gcr-develop/securebanking/securebanking-spring-config-server
     tag: latest
 
-  resources: {}
-  
-server:
-  port: 8888
+  java:
+    opts: -XX:+UseG1GC -XX:+UseContainerSupport -XX:MaxRAMPercentage=50 -agentlib:jdwp=transport=dt_socket,address=*:9090,server=y,suspend=n
+
+  resources: 
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+
+  server:
+    port: 8888
 
 git:
   ssh: 
