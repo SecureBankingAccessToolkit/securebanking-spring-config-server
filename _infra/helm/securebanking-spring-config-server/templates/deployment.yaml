@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: {{ .Values.deployment.apiVersion }}
 kind: Deployment
 metadata:
   name: {{ .Chart.Name }}
@@ -31,11 +31,11 @@ spec:
           imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
           ports:
             - name: http-server
-              containerPort: {{ .Values.server.port }}
+              containerPort: {{ .Values.deployment.server.port }}
           readinessProbe:
             httpGet:
               path: /actuator/health
-              port: {{ .Values.server.port }}
+              port: {{ .Values.deployment.server.port }}
             periodSeconds: 5
             failureThreshold: 3
             successThreshold: 1
@@ -43,8 +43,8 @@ spec:
           livenessProbe:
             httpGet:
               path: /actuator/health
-              port: {{ .Values.server.port }}
-            initialDelaySeconds: 5
+              port: {{ .Values.deployment.server.port }}
+            initialDelaySeconds: 20
             periodSeconds: 5
             failureThreshold: 5
             successThreshold: 1
@@ -65,5 +65,7 @@ spec:
                 name: git-ssh-key
                 key: id_rsa
           {{- end }}
+          - name: JAVA_OPTS
+            value: {{ .Values.deployment.java.opts }}
           resources:
             {{- toYaml .Values.deployment.resources | nindent 12 }}
