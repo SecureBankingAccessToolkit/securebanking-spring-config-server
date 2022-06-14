@@ -20,11 +20,11 @@ deployment:
 
   resources: 
     limits:
-      cpu: "500M"
-      memory: 512Mi
+      cpu: "500m"
+      memory: "512Mi"
     requests:
-      cpu: 500m
-      memory: 512Mi
+      cpu: "500m"
+      memory: "512Mi"
 
   server:
     port: 8888
